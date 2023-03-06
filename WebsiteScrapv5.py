@@ -7,13 +7,13 @@ import time
 #if you get 88640 code turn on VPN
 
 start = time.time()
-df = pd.read_csv("data.csv") #csv with company data must be named 'data.csv'
+df = pd.read_csv("PP1.csv") #check name of csv from where data is being read
 outdf = pd.DataFrame(columns=["Business Name", "URL"])
 filterout = ["dnb", "facebook", "linkedin", "bbb", "buildzoom"] #list of websites/keywords to filter out
 
 results = 1 #can select how many google search results to return / not working 100%
-lower = 0 #lower index from data.csv to search
-upper = 1000 #upper index
+lower = 0#lower index from data.csv to search
+upper = len(df) #upper index
 
 headers = { #Finder better / test for 429
     "Accept": "*/*",
@@ -39,39 +39,42 @@ for i in range(lower, upper):
         soup_link = BeautifulSoup(requests_results.content, "html.parser")
         up = False
         links = soup_link.find_all("a")
-        for link in links:
+        if '86640' in str(links): #google too many request code
+            print('86640 error index ' + str(i))
+            outdf.loc[len(outdf.index)] = [busName, '86640 error']
+            break
+        else:
+            for link in links:
+                if up == False:
+                    link_href = link.get("href")
+                    if "url?q=" in link_href and not "webcache" in link_href:
+                        title = link.find_all("h3")
+                        if len(title) > 0:
+                            s = link.get("href").split("?q=")[1].split("&sa=U")[0]
+                            rem = False
+                            up = False
+                            for j in filterout:
+                                if j in s:
+                                    rem = True
+                            if rem == False:
+                                if "https://www." in str(s):
+                                    s = s.replace("https://www.", "")
+                                elif "http://www." in str(s):
+                                    s = s.replace("http://www.", "")
+                                elif "https://" in str(s):
+                                    s = s.replace("https://", "")
+                                else:
+                                    s = s.replace("http://", "")
+                                up = True
+                                outdf.loc[len(outdf.index)] = [busName, s.replace("/", "")]
             if up == False:
-                link_href = link.get("href")
-                if "url?q=" in link_href and not "webcache" in link_href:
-                    title = link.find_all("h3")
-                    if len(title) > 0:
-                        s = link.get("href").split("?q=")[1].split("&sa=U")[0]
-                        rem = False
-                        up = False
-                        if '86640' in s: #google too many request code
-                            print('86640' + str(i))
-                        for j in filterout:
-                            if j in s:
-                                rem = True
-                        if rem == False:
-                            if "https://www." in str(s):
-                                s = s.replace("https://www.", "")
-                            elif "http://www." in str(s):
-                                s = s.replace("http://www.", "")
-                            elif "https://" in str(s):
-                                s = s.replace("https://", "")
-                            else:
-                                s = s.replace("http://", "")
-                            up = True
-                            outdf.loc[len(outdf.index)] = [busName, s.replace("/", "")]
-        if up == False:
-            s = "x"
-            outdf.loc[len(outdf.index)] = [busName, s]
+                outdf.loc[len(outdf.index)] = [busName, 'x']
     except requests.exceptions.Timeout:
-        print("Timeout occurred")
-        print('Final:' + str(i))
+        print('Timeout occurred index '+ str(i))
+        outdf.loc[len(outdf.index)] = [busName, 'timeout']
+        break
     print(i)
 
-outdf.to_csv("websitesv5.csv") #name of export csv is 'websitecsv5.csv'
+outdf.to_csv('PPP_File1_Index('+str(lower)+'-'+str(len(outdf))+').csv') #name of export csv
 print("done")
 print(time.time() - start)
