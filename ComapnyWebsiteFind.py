@@ -3,11 +3,12 @@ from bs4 import BeautifulSoup
 import re
 import pandas as pd
 import time
+import os
 
 #if you get 88640 code turn on VPN
 
 start = time.time()
-df = pd.read_csv("PP1.csv") #check name of csv from where data is being read
+df = pd.read_csv("PPP1.csv") #check name of csv from where data is being read
 outdf = pd.DataFrame(columns=["Business Name", "URL"])
 filterout = ["dnb", "facebook", "linkedin", "bbb", "buildzoom"] #list of websites/keywords to filter out
 
@@ -73,8 +74,12 @@ for i in range(lower, upper):
         print('Timeout occurred index '+ str(i))
         outdf.loc[len(outdf.index)] = [busName, 'timeout']
         break
-    print(i)
-
-outdf.to_csv('PPP_File1_Index('+str(lower)+'-'+str(len(outdf))+').csv') #name of export csv
+    try:
+        os.remove('PPP_File1_Index('+str(lower)+'-'+str(len(outdf)-1)+').csv')
+    except:
+        pass
+    finally:
+        outdf.to_csv('PPP_File1_Index('+str(lower)+'-'+str(len(outdf))+').csv') #name of export csv
+        print(i)
 print("done")
 print(time.time() - start)
