@@ -13,7 +13,7 @@ outdf = pd.DataFrame(columns=["Business Name", "URL"])
 filterout = ["dnb", "facebook", "linkedin", "bbb", "buildzoom"] #list of websites/keywords to filter out
 
 results = 1 #can select how many google search results to return / not working 100%
-lower = 0#lower index from data.csv to search
+lower = 548#lower index from data.csv to search
 upper = len(df) #upper index
 
 headers = { #Finder better / test for 429
@@ -75,11 +75,11 @@ for i in range(lower, upper):
         outdf.loc[len(outdf.index)] = [busName, 'timeout']
         break
     try:
-        os.remove('PPP_File1_Index('+str(lower)+'-'+str(len(outdf)-1)+').csv')
+        os.remove('PPP_File1_Index('+str(lower)+'-'+str(len(outdf)+lower-1)+').csv')
     except:
         pass
     finally:
-        outdf.to_csv('PPP_File1_Index('+str(lower)+'-'+str(len(outdf))+').csv') #name of export csv
+        outdf.to_csv('PPP_File1_Index('+str(lower)+'-'+str(len(outdf)+lower)+').csv') #name of export csv
         print(i)
 print("done")
 print(time.time() - start)
